@@ -1,7 +1,10 @@
 import { ReactElement, useState } from 'react'
 import * as React from 'react'
-import { Grid, Tooltip } from '@material-ui/core'
+import { Grid, Tooltip, Card, CardContent, Typography, Button, Chip, Divider, Box } from '@material-ui/core'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
+import GetAppIcon from '@material-ui/icons/GetApp'
+import GitHubIcon from '@material-ui/icons/GitHub'
+import LanguageIcon from '@material-ui/icons/Language'
 import './module.scss'
 import { filesize } from 'filesize'
 
@@ -11,59 +14,78 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: '30px 0',
       [theme.breakpoints.down('sm')]: {
         margin: '10px 0'
-      },
-      '& a': {
-        color: theme.palette.secondary.main
       }
     },
-    releases: {
-      '& a': {
-        color: theme.palette.secondary.main
+    header: {
+      marginBottom: theme.spacing(4)
+    },
+    card: {
+      borderRadius: 16,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+      marginBottom: theme.spacing(3),
+      overflow: 'hidden'
+    },
+    cardHeader: {
+      background: theme.palette.type === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+      padding: theme.spacing(2),
+      borderBottom: `1px solid ${theme.palette.divider}`
+    },
+    cardContent: {
+      padding: theme.spacing(3)
+    },
+    sectionTitle: {
+      fontWeight: 700,
+      fontSize: '1.1rem',
+      margin: 0
+    },
+    link: {
+      textDecoration: 'none',
+      color: theme.palette.primary.main,
+      '&:hover': {
+        textDecoration: 'underline'
       }
     },
-    document: {
-      wordBreak: 'break-word',
+    chip: {
+      margin: theme.spacing(0.5)
+    },
+    downloadButton: {
+      width: '100%',
+      marginTop: theme.spacing(1),
+      borderRadius: 8,
+      textTransform: 'none',
+      fontWeight: 600
+    },
+    releaseCard: {
+      marginBottom: theme.spacing(3),
+      borderRadius: 16,
+      border: `1px solid ${theme.palette.divider}`,
+      boxShadow: 'none',
+      transition: 'box-shadow 0.2s ease',
+      '&:hover': {
+        boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+      }
+    },
+    releaseHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing(2)
+    },
+    markdownBody: {
       '& img': {
-        maxWidth: '100%'
+        maxWidth: '100%',
+        borderRadius: 8
       },
       '& pre': {
-        whiteSpace: 'pre-wrap'
-      }
-    },
-    plainDocument: {
-      wordBreak: 'break-word'
-    },
-    box: {
-      padding: '24px 0',
-      borderBottom: '1px solid #eaecef',
-      '&:first-child': {
-        paddingTop: '0.5rem'
-      },
-      '&:last-child': {
-        borderBottom: 'none'
-      },
-      wordBreak: 'break-word'
-    },
-    h2: {
-      marginTop: 0,
-      marginBottom: 14
-    },
-    p: {
-      marginTop: 10,
-      marginBottom: 10,
-      '&:last-child': {
-        marginBottom: 0
-      }
-    },
-    release: {
-      [theme.breakpoints.down('sm')]: {
-        display: 'none'
+        borderRadius: 8,
+        background: theme.palette.type === 'dark' ? '#1e1e1e' : '#f6f8fa',
+        padding: theme.spacing(2)
       }
     }
   })
 )
 
-export default function Module ({ data }: any): ReactElement {
+export default function Module({ data }: any): ReactElement {
   const classes = useStyles()
   const [showReleaseNum, setShowReleaseNum] = useState(1)
   return (
@@ -86,130 +108,194 @@ export default function Module ({ data }: any): ReactElement {
         </Grid>
         <Grid item xs={12} md={3}>
           <div className={classes.container}>
-            <div className={classes.box}>
-              <h2 className={classes.h2}>Package</h2>
-              <p className={classes.p}>{data.githubRepository.name}</p>
-            </div>
-            {(data.githubRepository.collaborators?.edges.length) ||
-            (data.githubRepository.additionalAuthors?.length)
-              ? (<div className={classes.box}>
-                <h2 className={classes.h2}>Authors</h2>
-                {data.githubRepository.collaborators
-                  ? data.githubRepository.collaborators.edges.map(({ node: collaborator }: any) => (
-                    <p key={collaborator.login} className={classes.p}>
-                      <a href={`https://github.com/${collaborator.login as string}`}
-                         target={'_blank'}
-                      >
-                        {collaborator.name || collaborator.login}
-                      </a>
-                    </p>
-                  ))
+            <Card className={classes.card}>
+              <div className={classes.cardHeader}>
+                <Typography className={classes.sectionTitle}>Details</Typography>
+              </div>
+              <CardContent className={classes.cardContent}>
+                <Box mb={2}>
+                  <Typography variant="subtitle2" color="textSecondary">Package</Typography>
+                  <Typography variant="body2" style={{ wordBreak: 'break-all' }}>{data.githubRepository.name}</Typography>
+                </Box>
+
+                {(data.githubRepository.collaborators?.edges.length) ||
+                  (data.githubRepository.additionalAuthors?.length)
+                  ? (<Box mb={2}>
+                    <Typography variant="subtitle2" color="textSecondary">Authors</Typography>
+                    <Box display="flex" flexWrap="wrap">
+                      {data.githubRepository.collaborators
+                        ? data.githubRepository.collaborators.edges.map(({ node: collaborator }: any) => (
+                          <Chip
+                            key={collaborator.login}
+                            label={collaborator.name || collaborator.login}
+                            component="a"
+                            href={`https://github.com/${collaborator.login as string}`}
+                            target="_blank"
+                            clickable
+                            size="small"
+                            className={classes.chip}
+                            avatar={<GitHubIcon />}
+                          />
+                        ))
+                        : ''
+                      }
+                      {data.githubRepository.additionalAuthors
+                        ? data.githubRepository.additionalAuthors.map((author: any) => (
+                          <Chip
+                            key={author.name}
+                            label={author.name || author.link}
+                            component="a"
+                            href={author.link}
+                            target="_blank"
+                            clickable
+                            size="small"
+                            className={classes.chip}
+                          />
+                        ))
+                        : ''
+                      }
+                    </Box>
+                  </Box>)
                   : ''
                 }
-                {data.githubRepository.additionalAuthors
-                  ? data.githubRepository.additionalAuthors.map((author: any) => (
-                    <p key={author.name} className={classes.p}>
-                      <a href={author.link} target={'_blank'}>
-                        {author.name || author.link}
-                      </a>
-                    </p>
-                  ))
-                  : ''
-                }
-              </div>)
-              : ''
-            }
-            {data.githubRepository.homepageUrl
-              ? (<div className={classes.box}>
-                <h2 className={classes.h2}>Support / Discussion URL</h2>
-                <p className={classes.p}>
-                  <a href={data.githubRepository.homepageUrl}
-                     target={'_blank'}
-                  >{data.githubRepository.homepageUrl}</a>
-                </p>
-              </div>)
-              : ''
-            }
-            {data.githubRepository.sourceUrl
-              ? (<div className={classes.box}>
-                <h2 className={classes.h2}>Source URL</h2>
-                <p className={classes.p}>
-                  <a href={data.githubRepository.sourceUrl}
-                     target={'_blank'}
-                  >{data.githubRepository.sourceUrl}</a>
-                </p>
-              </div>)
-              : ''
-            }
+
+                {data.githubRepository.homepageUrl && (
+                  <Box mb={2}>
+                    <Button
+                      startIcon={<LanguageIcon />}
+                      href={data.githubRepository.homepageUrl}
+                      target="_blank"
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                    >
+                      Website
+                    </Button>
+                  </Box>
+                )}
+
+                {data.githubRepository.sourceUrl && (
+                  <Box mb={2}>
+                    <Button
+                      startIcon={<GitHubIcon />}
+                      href={data.githubRepository.sourceUrl}
+                      target="_blank"
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                    >
+                      Source Code
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+
             {data.githubRepository.releases?.edges.length
-              ? (<div className={`${classes.box} ${classes.release}`}>
-                <h2 className={classes.h2}>Releases</h2>
-                <h3 className={classes.h2}>
-                  <a href={data.githubRepository.releases.edges[0].node.url}
-                     target={'_blank'}
-                  >{data.githubRepository.releases.edges[0].node.name}</a>
-                </h3>
-                <p className={classes.p}>
-                  Release Type: {data.githubRepository.releases.edges[0].node.isPrerelease ? 'Pre-release' : 'Stable'}
-                </p>
-                <p className={classes.p}>
-                  {new Date(data.githubRepository.releases.edges[0].node.publishedAt).toLocaleString()}
-                </p>
-                <p className={classes.p}>
-                  <a href={'#releases'}>View all releases</a>
-                </p>
-              </div>)
+              ? (<Card className={classes.card}>
+                <div className={classes.cardHeader}>
+                  <Typography className={classes.sectionTitle}>Latest Release</Typography>
+                </div>
+                <CardContent className={classes.cardContent}>
+                  <Typography variant="h6" gutterBottom>
+                    <a href={data.githubRepository.releases.edges[0].node.url} target="_blank" className={classes.link}>
+                      {data.githubRepository.releases.edges[0].node.name}
+                    </a>
+                  </Typography>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <Chip
+                      label={data.githubRepository.releases.edges[0].node.isPrerelease ? 'Pre-release' : 'Stable'}
+                      color={data.githubRepository.releases.edges[0].node.isPrerelease ? 'secondary' : 'primary'}
+                      size="small"
+                      style={{ marginRight: 8 }}
+                    />
+                    <Typography variant="caption" color="textSecondary">
+                      {new Date(data.githubRepository.releases.edges[0].node.publishedAt).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.downloadButton}
+                    href="#releases"
+                  >
+                    Download
+                  </Button>
+                </CardContent>
+              </Card>)
               : ''
             }
           </div>
         </Grid>
         {data.githubRepository.releases?.edges.length
           ? (<Grid item xs={12}>
-            <div className={classes.releases}>
-              <h1 id="releases">Releases</h1>
+            <div className={classes.header}>
+              <Typography variant="h4" component="h1" gutterBottom id="releases" style={{ fontWeight: 700 }}>
+                Releases
+              </Typography>
               {data.githubRepository.releases.edges.slice(0, showReleaseNum).map(({ node: release }: any) => (
-                <div key={release.name}>
-                  <h2><a href={release.url} target={'_blank'}>{release.name}</a></h2>
-                  <p className={classes.p}>
-                    Release Type: {release.isPrerelease ? 'Pre-release' : 'Stable'}
-                  </p>
-                  <p className={classes.p}>
-                    {new Date(release.publishedAt).toLocaleString()}
-                  </p>
-                  <div
-                    className="markdown-body"
-                    dangerouslySetInnerHTML={{
-                      __html: release.descriptionHTML
-                    }}
-                  />
-                  {release.releaseAssets?.edges.length
-                    ? (
-                      <div>
-                        <h3>Downloads</h3>
-                        <ul>
-                          {release.releaseAssets.edges.map(({ node: asset }: any) => (
-                            <Tooltip title={`${asset.downloadCount as number} downloads in ${filesize(asset.size)}`} placement="bottom-start">
-                              <li key={asset.name} >
-                                <a href={asset.downloadUrl} target={'_blank'}>{asset.name}</a>
-                              </li>
-                            </Tooltip>
-                          ))}
-                        </ul>
-                      </div>)
-                    : ''
-                  }
-                </div>
+                <Card key={release.name} className={classes.releaseCard}>
+                  <CardContent>
+                    <div className={classes.releaseHeader}>
+                      <Typography variant="h5" component="h2" style={{ fontWeight: 600 }}>
+                        <a href={release.url} target="_blank" className={classes.link}>{release.name}</a>
+                      </Typography>
+                      <Chip
+                        label={release.isPrerelease ? 'Pre-release' : 'Stable'}
+                        color={release.isPrerelease ? 'secondary' : 'primary'}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </div>
+                    <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
+                      Published on {new Date(release.publishedAt).toLocaleString()}
+                    </Typography>
+                    <Divider style={{ margin: '16px 0' }} />
+                    <div
+                      className={`markdown-body ${classes.markdownBody}`}
+                      dangerouslySetInnerHTML={{
+                        __html: release.descriptionHTML
+                      }}
+                    />
+                    {release.releaseAssets?.edges.length
+                      ? (
+                        <Box mt={3}>
+                          <Typography variant="subtitle1" gutterBottom style={{ fontWeight: 600 }}>Downloads</Typography>
+                          <Grid container spacing={2}>
+                            {release.releaseAssets.edges.map(({ node: asset }: any) => (
+                              <Grid item key={asset.name}>
+                                <Tooltip title={`${asset.downloadCount as number} downloads in ${filesize(asset.size)}`} placement="top">
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<GetAppIcon />}
+                                    href={asset.downloadUrl}
+                                    target="_blank"
+                                    style={{ borderRadius: 8, textTransform: 'none' }}
+                                  >
+                                    {asset.name}
+                                  </Button>
+                                </Tooltip>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </Box>)
+                      : ''
+                    }
+                  </CardContent>
+                </Card>
               ))}
               {showReleaseNum !== data.githubRepository.releases.edges.length
-                ? (<p>
-                  <a
-                    href=""
+                ? (<Box mt={2} textAlign="center">
+                  <Button
                     onClick={(e) => {
                       e.preventDefault()
                       setShowReleaseNum(data.githubRepository.releases.edges.length)
                     }}
-                  >Show older versions</a>
-                </p>)
+                    variant="outlined"
+                    color="primary"
+                  >Show older versions</Button>
+                </Box>)
                 : ''
               }
             </div>

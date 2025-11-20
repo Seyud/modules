@@ -15,12 +15,13 @@ const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       color: theme.palette.text.primary,
-      borderRadius: 4,
+      borderRadius: 12,
       maxHeight: 'calc(100vh - 100px)',
-      overflow: 'scroll',
+      overflowY: 'auto',
       zIndex: theme.zIndex.appBar + 1,
-      padding: 10,
+      padding: 0,
       boxSizing: 'border-box',
+      background: theme.palette.background.paper,
       [theme.breakpoints.down('xs')]: {
         maxHeight: 'calc(100vh - 56px)'
       }
@@ -29,16 +30,15 @@ const useStyles = makeStyles((theme) =>
       width: 550,
       maxWidth: 'calc(100vw - 40px)',
       boxSizing: 'border-box',
-      padding: '20px 15px',
-      margin: '0 10px',
+      padding: '16px 20px',
+      margin: 0,
       borderBottom: '1px solid ' + theme.palette.divider,
+      transition: 'background-color 0.2s ease',
       '&:last-child': {
         borderBottom: 'none'
       },
       '&:hover': {
-        background: theme.palette.type === 'light'
-          ? alpha(theme.palette.common.black, 0.1)
-          : alpha(theme.palette.common.white, 0.1)
+        background: theme.palette.action.hover
       },
       cursor: 'pointer',
       display: 'block',
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) =>
   })
 )
 
-export default function SearchResultCard (props: SearchResultCardProps): React.ReactElement {
+export default function SearchResultCard(props: SearchResultCardProps): React.ReactElement {
   const classes = useStyles()
   return (
     <Paper
@@ -75,13 +75,13 @@ export default function SearchResultCard (props: SearchResultCardProps): React.R
           </Link>
         ))
         : <div
-            className={classes.result}
+          className={classes.result}
+        >
+          <Typography variant="body2" color="textSecondary" component="p"
+            align="center"
           >
-            <Typography variant="body2" color="textSecondary" component="p"
-                        align="center"
-            >
-              No results found
-            </Typography>
+            No results found
+          </Typography>
         </div>
       }
     </Paper>

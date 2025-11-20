@@ -34,7 +34,20 @@ import FlexSearch from 'flexsearch'
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      flexGrow: 1
+      flexGrow: 1,
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    appBar: {
+      background: 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(12px)',
+      boxShadow: 'none',
+      borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+      color: theme.palette.text.primary,
+      [theme.breakpoints.down('xs')]: {
+        background: theme.palette.background.paper
+      }
     },
     menuButton: {
       marginRight: theme.spacing(2)
@@ -48,18 +61,27 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     h1: {
       textDecoration: 'none',
-      color: 'inherit'
+      color: 'inherit',
+      fontWeight: 700,
+      letterSpacing: '-0.02em'
     },
     search: {
       position: 'relative',
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: alpha(theme.palette.common.white, 0.15),
+      borderRadius: 16,
+      backgroundColor: alpha(theme.palette.common.black, 0.05),
       '&:hover': {
-        backgroundColor: alpha(theme.palette.common.white, 0.25)
+        backgroundColor: alpha(theme.palette.common.black, 0.08)
       },
       marginLeft: 0,
       marginRight: '12px',
       width: '100%',
+      transition: 'all 0.2s ease',
+      border: '1px solid transparent',
+      '&:focus-within': {
+        backgroundColor: alpha(theme.palette.common.white, 1),
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        border: `1px solid ${theme.palette.primary.main}`
+      },
       [theme.breakpoints.up('sm')]: {
         marginLeft: theme.spacing(1),
         width: 'auto'
@@ -72,30 +94,33 @@ const useStyles = makeStyles((theme: Theme) =>
       pointerEvents: 'none',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      color: theme.palette.text.secondary
     },
     inputRoot: {
-      color: 'inherit'
+      color: 'inherit',
+      width: '100%'
     },
     inputInput: {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
+      padding: theme.spacing(1.5, 1, 1.5, 0),
       paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
       transition: theme.transitions.create('width'),
       width: '100%',
       [theme.breakpoints.up('sm')]: {
-        width: '12ch',
+        width: '16ch',
         '&:focus': {
-          width: '20ch'
+          width: '24ch'
         }
       }
     },
     footer: {
-      height: 32,
+      padding: theme.spacing(3, 2),
+      marginTop: 'auto',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: 14
+      fontSize: 14,
+      color: theme.palette.text.secondary
     },
     list: {
       width: 250
@@ -103,9 +128,14 @@ const useStyles = makeStyles((theme: Theme) =>
     searchResult: {
       position: 'absolute',
       right: 0,
-      top: 'calc(100% + 8px)',
+      top: 'calc(100% + 12px)',
+      zIndex: 10,
+      borderRadius: 12,
+      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+      overflow: 'hidden',
       [theme.breakpoints.down('xs')]: {
-        right: -28
+        right: -28,
+        width: '100vw'
       }
     },
     hide: {
@@ -171,7 +201,7 @@ function Layout (props: { children: React.ReactNode }): React.ReactElement {
   }
   return (
     <div className={classes.root}>
-      <AppBar position='sticky'>
+      <AppBar position='sticky' className={classes.appBar} color="default">
         <Toolbar>
           <IconButton
             className={classes.menuButton}
@@ -256,15 +286,36 @@ export default function LayoutWithTheme (props: { children: React.ReactNode }): 
     () => createTheme({
       palette: {
         type: prefersDarkMode ? 'dark' : 'light',
-        primary: { main: prefersDarkMode ? '#333' : blue[600] },
-        secondary: { main: blue[500] }
+        primary: { main: prefersDarkMode ? '#90caf9' : '#1976d2' },
+        secondary: { main: prefersDarkMode ? '#f48fb1' : '#d81b60' },
+        background: {
+          default: prefersDarkMode ? '#0f1012' : '#f5f7fa',
+          paper: prefersDarkMode ? '#1e1e24' : '#ffffff'
+        }
+      },
+      shape: {
+        borderRadius: 12
       },
       typography: {
         fontFamily: [
+          'Inter',
           'Roboto',
           'FZ SC',
           'sans-serif'
-        ].join(',')
+        ].join(','),
+        h5: {
+          fontWeight: 600
+        },
+        h6: {
+          fontWeight: 600
+        }
+      },
+      overrides: {
+        MuiAppBar: {
+          colorDefault: {
+            backgroundColor: prefersDarkMode ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)'
+          }
+        }
       }
     }),
     [prefersDarkMode]

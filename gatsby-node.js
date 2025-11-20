@@ -3,12 +3,12 @@ const { v4: uuid } = require('uuid')
 const crypto = require('crypto')
 const path = require('path')
 const ellipsize = require('ellipsize')
-const { gql } =  require('@apollo/client')
+const { gql } = require('@apollo/client')
 const { execFileSync } = require('child_process')
 
 const { fetchFromGithub, replacePrivateImage } = require('./github-source')
 
-function makeRepositoryQuery (name) {
+function makeRepositoryQuery(name) {
   return gql`
 {
   repository(owner: "KernelSU-Modules-Repo", name: "${name}") {
@@ -110,7 +110,7 @@ function makeRepositoryQuery (name) {
 
 
 const PAGINATION = 10
-function makeRepositoriesQuery (cursor) {
+function makeRepositoriesQuery(cursor) {
   const arg = cursor ? `, after: "${cursor}"` : ''
   return gql`
 {
@@ -245,7 +245,7 @@ const generateGatsbyNode = (result, createNode) => {
   })
 }
 
-function parseRepositoryObject (repo) {
+function parseRepositoryObject(repo) {
   if (repo.summary) {
     repo.summary = ellipsize(repo.summary.text.trim(), 512).trim()
   }
@@ -294,11 +294,11 @@ function parseRepositoryObject (repo) {
         !isLatest && !isDraft && releaseAssets && tagName.match(/^\d+-.+$/) && releaseAssets.edges
           .some(({ node: { contentType } }) => contentType === 'application/zip'))
   }
-  repo.isModule = !!(repo.name.match(/\./) &&
+  repo.isModule = !!(repo.name.match(/^[a-zA-Z][a-zA-Z0-9._-]+$/) &&
     repo.description &&
     repo.releases &&
     repo.releases.edges.length &&
-    repo.name !== 'org.meowcat.example' && repo.name !== '.github')
+    !['.github', 'submission', 'developers', 'modules'].includes(repo.name))
   if (repo.isModule) {
     for (const release of repo.releases.edges) {
       release.node.descriptionHTML = replacePrivateImage(release.node.description, release.node.descriptionHTML)
@@ -416,7 +416,7 @@ exports.sourceNodes = async (
       console.error(errMsg)
       throw errMsg
     }
-    mergedResult.data.organization.repositories.edges.unshift({'node': result.data.repository})
+    mergedResult.data.organization.repositories.edges.unshift({ 'node': result.data.repository })
   } else {
     while (true) {
       console.log(`Querying GitHub API, page ${page}, total ${Math.ceil(total / PAGINATION) || 'unknown'}, cursor: ${cursor}`)
@@ -490,7 +490,7 @@ exports.createPages = async ({ graphql, actions }) => {
   }
 }
 
-function flatten (object) {
+function flatten(object) {
   for (const key of Object.keys(object)) {
     if (object[key] !== null && object[key] !== undefined && typeof object[key] === 'object') {
       if (object[key].edges) {
