@@ -10,19 +10,9 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - uses: oven-sh/setup-bun@v1
       with:
-        node-version: '18'
-    - name: Yarn cache directory
-      id: yarn-cache-dir
-      shell: bash
-      run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-    - name: cache yarn modules
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.yarn-cache-dir.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: ${{ runner.os }}-yarn-
+        bun-version: latest
     - name: cache gatsby cache
       uses: actions/cache@v4
       with:
@@ -53,12 +43,12 @@ runs:
         save-always: true
     - name: Restore cache
       shell: bash
-      run: node gh-pages-cache-restore.js
-    - name: Install and Build 🔧 # This example project is built using yarn and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
+      run: bun gh-pages-cache-restore.js
+    - name: Install and Build 🔧
       shell: bash
       run: |
-        yarn install --immutable
-        yarn build
+        bun install --frozen-lockfile
+        bun run build
         echo "modules.kernelsu.org" > ./public/CNAME
       env:
         GRAPHQL_TOKEN: ${{ inputs.token }}
@@ -74,7 +64,7 @@ runs:
         rm -f cached_graphql.json
     - name: Refresh cache
       shell: bash
-      run: node gh-pages-cache.js
+      run: bun gh-pages-cache.js
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
