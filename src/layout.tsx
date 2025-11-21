@@ -260,7 +260,7 @@ function Layout (props: { children: React.ReactNode }): React.ReactElement {
         <>{props.children}</>
       </Container>
       <div className={classes.footer}>
-        &#169; 2021 - {new Date().getFullYear()} New KernelSU Modules Repository
+        &#169; 2021 - {new Date().getFullYear()} Official KernelSU Modules Repository
       </div>
       <div className={classes.footer}>
         <a href="https://lsposed.org/privacy">Privacy Policy</a>

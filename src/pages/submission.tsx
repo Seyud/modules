@@ -119,9 +119,9 @@ export default function SubmissionPage (): ReactElement {
                 value={submissionType}
                 onChange={(e) => setSubmissionType(e.target.value as string)}
               >
-                <MenuItem value="submission">Submit a new package</MenuItem>
-                <MenuItem value="transfer">Transfer package ownership</MenuItem>
-                <MenuItem value="appeal">Appeal for package name/ownership</MenuItem>
+                <MenuItem value="submission">Submit a new module</MenuItem>
+                <MenuItem value="transfer">Transfer module ownership</MenuItem>
+                <MenuItem value="appeal">Appeal for module name/ownership</MenuItem>
                 <MenuItem value="issue">Report an issue</MenuItem>
                 <MenuItem value="suggestion">Give some suggestions</MenuItem>
               </Select>
@@ -129,9 +129,9 @@ export default function SubmissionPage (): ReactElement {
           </div>
           {showPackageName()
             ? (<div className={classes.flex}>
-              <span className={classes.labelInput}>Package name: </span>
+              <span className={classes.labelInput}>Module name: </span>
               <TextField
-                label={packageName ? isPackageNameValid() ? 'Package name' : 'Invalid package name' : 'io.github.username.example'}
+                label={packageName ? isPackageNameValid() ? 'Module ID' : 'Invalid module ID' : 'example-module'}
                 className={classes.formInput}
                 value={packageName}
                 error={!!packageName && !isPackageNameValid()}
