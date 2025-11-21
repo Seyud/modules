@@ -114,7 +114,7 @@ export default function Module({ data }: any): ReactElement {
               </div>
               <CardContent className={classes.cardContent}>
                 <Box mb={2}>
-                  <Typography variant="subtitle2" color="textSecondary">Package</Typography>
+                  <Typography variant="subtitle2" color="textSecondary">Module ID</Typography>
                   <Typography variant="body2" style={{ wordBreak: 'break-all' }}>{data.githubRepository.name}</Typography>
                 </Box>
 
