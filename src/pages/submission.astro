@@ -50,75 +50,79 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-    const form = document.getElementById('submission-form') as HTMLFormElement;
-    const typeSelect = document.getElementById('submission-type') as HTMLSelectElement;
-    const moduleIdGroup = document.getElementById('module-id-group');
-    const moduleTitleGroup = document.getElementById('module-title-group');
-    const moduleIdInput = document.getElementById('module-id') as HTMLInputElement;
-    const moduleTitleInput = document.getElementById('module-title') as HTMLInputElement;
-    const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
-    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('submission-form');
+        const typeSelect = document.getElementById('submission-type');
+        const moduleIdGroup = document.getElementById('module-id-group');
+        const moduleTitleGroup = document.getElementById('module-title-group');
+        const moduleIdInput = document.getElementById('module-id');
+        const moduleTitleInput = document.getElementById('module-title');
+        const descriptionInput = document.getElementById('description');
+        const submitBtn = document.getElementById('submit-btn');
 
-    // Check URL params for initial type
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialType = urlParams.get('type');
-    if (initialType && ['new', 'update'].includes(initialType)) {
-        typeSelect.value = initialType;
-    }
-
-    function updateFormVisibility() {
-        const type = typeSelect.value;
-        if (type === 'new') {
-            moduleIdGroup.classList.remove('hidden');
-            moduleTitleGroup.classList.add('hidden');
-            moduleIdInput.required = true;
-            moduleTitleInput.required = false;
-        } else {
-            moduleIdGroup.classList.add('hidden');
-            moduleTitleGroup.classList.remove('hidden');
-            moduleIdInput.required = false;
-            moduleTitleInput.required = true;
-        }
-        validateForm();
-    }
-
-    function validateForm() {
-        const type = typeSelect.value;
-        let isValid = false;
-
-        if (type === 'new') {
-            const id = moduleIdInput.value.trim();
-            // Regex: Starts with letter, contains letters, numbers, ., _, -
-            const idRegex = /^[a-zA-Z][a-zA-Z0-9._-]*$/;
-            isValid = idRegex.test(id);
-        } else {
-            isValid = moduleTitleInput.value.trim().length > 0;
+        if (
+            !(form instanceof HTMLFormElement) ||
+            !(typeSelect instanceof HTMLSelectElement) ||
+            !(moduleIdGroup instanceof HTMLElement) ||
+            !(moduleTitleGroup instanceof HTMLElement) ||
+            !(moduleIdInput instanceof HTMLInputElement) ||
+            !(moduleTitleInput instanceof HTMLInputElement) ||
+            !(descriptionInput instanceof HTMLTextAreaElement) ||
+            !(submitBtn instanceof HTMLButtonElement)
+        ) {
+            return;
         }
 
-        submitBtn.disabled = !isValid;
-    }
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialType = urlParams.get('type');
+        if (initialType && ['new', 'update'].includes(initialType)) {
+            typeSelect.value = initialType;
+        }
 
-    typeSelect.addEventListener('change', updateFormVisibility);
-    moduleIdInput.addEventListener('input', validateForm);
-    moduleTitleInput.addEventListener('input', validateForm);
+        const updateFormVisibility = () => {
+            const type = typeSelect.value;
+            if (type === 'new') {
+                moduleIdGroup.classList.remove('hidden');
+                moduleTitleGroup.classList.add('hidden');
+                moduleIdInput.required = true;
+                moduleTitleInput.required = false;
+            } else {
+                moduleIdGroup.classList.add('hidden');
+                moduleTitleGroup.classList.remove('hidden');
+                moduleIdInput.required = false;
+                moduleTitleInput.required = true;
+            }
+            validateForm();
+        };
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const type = typeSelect.value;
-        const showPackageName = ['submission', 'transfer', 'appeal'].includes(type);
-        const issueTitle = showPackageName
-            ? `[${type}] ${packageNameInput.value}`
-            : `[${type}] ${titleInput.value}`;
-        
-        const url = `https://github.com/KernelSU-Modules-Repo/submission/issues/new?title=${
-            encodeURIComponent(issueTitle)
-        }&body=${
-            encodeURIComponent(descriptionInput.value)
-        }`;
-        
-        window.open(url, '_blank');
+        const validateForm = () => {
+            const type = typeSelect.value;
+            const isValid = type === 'new'
+                ? /^[a-zA-Z][a-zA-Z0-9._-]*$/.test(moduleIdInput.value.trim())
+                : moduleTitleInput.value.trim().length > 0;
+
+            submitBtn.disabled = !isValid;
+        };
+
+        typeSelect.addEventListener('change', updateFormVisibility);
+        moduleIdInput.addEventListener('input', validateForm);
+        moduleTitleInput.addEventListener('input', validateForm);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const type = typeSelect.value;
+            const titleValue = type === 'new' ? moduleIdInput.value.trim() : moduleTitleInput.value.trim();
+            const issueTitle = `[${type}] ${titleValue}`;
+
+            const url = `https://github.com/KernelSU-Modules-Repo/submission/issues/new?title=${
+                encodeURIComponent(issueTitle)
+            }&body=${
+                encodeURIComponent(descriptionInput.value)
+            }`;
+
+            window.open(url, '_blank');
+        });
+
+        updateFormVisibility();
     });
-
-    // Initial check
-    updateFormVisibility();
 </script>

@@ -23,6 +23,15 @@ if (module.collaborators && module.collaborators.length > 0) {
 const authorString = authors.slice(0, 2).join(', ') + (authors.length > 2 ? '...' : '');
 
 const latestVersion = module.latestRelease || module.latestBetaRelease || module.latestSnapshotRelease;
+const updatedAtValue = (module as { updatedAt?: string | Date | null }).updatedAt;
+const updatedAtDate = updatedAtValue instanceof Date
+    ? updatedAtValue
+    : updatedAtValue
+        ? new Date(updatedAtValue)
+        : null;
+const formattedUpdatedAt = updatedAtDate && !Number.isNaN(updatedAtDate.valueOf())
+    ? updatedAtDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
 ---
 
 <a href={`/module/${module.name}`} class="group relative flex flex-col rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 hover:border-blue-500/50 hover:bg-gray-50 dark:hover:bg-slate-900 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
@@ -38,9 +47,9 @@ const latestVersion = module.latestRelease || module.latestBetaRelease || module
                         <span class="truncate">{authorString}</span>
                     </span>
                 )}
-                {authorString && module.updatedAt && <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-slate-600 flex-shrink-0"></span>}
-                {module.updatedAt && (
-                    <span class="flex-shrink-0">{module.updatedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                {authorString && formattedUpdatedAt && <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-slate-600 flex-shrink-0"></span>}
+                {formattedUpdatedAt && (
+                    <span class="flex-shrink-0">{formattedUpdatedAt}</span>
                 )}
             </p>
         </div>
