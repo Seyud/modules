@@ -129,9 +129,9 @@ export default function SubmissionPage (): ReactElement {
           </div>
           {showPackageName()
             ? (<div className={classes.flex}>
-              <span className={classes.labelInput}>Module name: </span>
+              <span className={classes.labelInput}>Module ID: </span>
               <TextField
-                label={packageName ? isPackageNameValid() ? 'Module ID' : 'Invalid module ID' : 'example-module'}
+                label={packageName ? isPackageNameValid() ? 'Module ID' : 'Invalid module ID' : 'example-module-id'}
                 className={classes.formInput}
                 value={packageName}
                 error={!!packageName && !isPackageNameValid()}
