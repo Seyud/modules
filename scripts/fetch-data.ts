@@ -187,18 +187,6 @@ const makeRepositoryQuery = (name: string) => gql`
         }
       }
     }
-    updatedAt
-    createdAt
-    stargazerCount
-  }
-}
-`;
-
-const makeRepositoriesQuery = (cursor: string | null) => {
-  const arg = cursor ? `, after: "${cursor}"` : '';
-  return gql`
-{
-  organization(login: "KernelSU-Modules-Repo") {
     repositories(first: ${PAGINATION}${arg}, orderBy: {field: UPDATED_AT, direction: DESC}, privacy: PUBLIC) {
       edges {
         node {
@@ -289,7 +277,25 @@ const makeRepositoriesQuery = (cursor: string | null) => {
     }
   }
 }`;
+
+
+const makeStarCountQuery = (repos: { owner: string, name: string }[]) => {
+  const queries = repos.map((repo, index) => `
+    repo${index}: repository(owner: "${repo.owner}", name: "${repo.name}") {
+      stargazerCount
+    }
+  `).join('\n');
+  return gql`{ ${queries} }`;
 };
+
+function getSourceRepo(sourceUrl: string | null): { owner: string, name: string } | null {
+  if (!sourceUrl) return null;
+  const match = sourceUrl.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)/);
+  if (match) {
+    return { owner: match[1], name: match[2].replace(/\.git$/, '') };
+  }
+  return null;
+}
 
 const REGEX_PUBLIC_IMAGES = /https:\/\/github\.com\/[a-zA-Z0-9-]+\/[\w\-.]+\/assets\/\d+\/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})/g;
 
@@ -473,6 +479,23 @@ async function main() {
       return bTime - aTime;
     });
 
+    // Fetch stars for the single module if it has a sourceUrl
+    const sourceRepo = getSourceRepo(module.sourceUrl);
+    if (sourceRepo && (sourceRepo.owner !== 'KernelSU-Modules-Repo' || sourceRepo.name !== module.moduleId)) {
+      try {
+        const query = makeStarCountQuery([sourceRepo]);
+        const result: any = await client.request(query);
+        if (result.repo0) {
+          const sourceStars = result.repo0.stargazerCount;
+          if (sourceStars > module.stargazerCount) {
+            module.stargazerCount = sourceStars;
+          }
+        }
+      } catch (e) {
+        console.error(`Failed to fetch star count for source repo ${sourceRepo.owner}/${sourceRepo.name}`, e);
+      }
+    }
+
     fs.writeFileSync(modulesCachePath, JSON.stringify(modules));
     console.log(`Updated module ${modulePackage}`);
   } else {
@@ -517,6 +540,37 @@ async function main() {
       );
       return bTime - aTime;
     });
+
+    // Collect source repos
+    const sourceReposToCheck: { owner: string, name: string, index: number }[] = [];
+    modules.forEach((module, index) => {
+      const sourceRepo = getSourceRepo(module.sourceUrl);
+      if (sourceRepo && (sourceRepo.owner !== 'KernelSU-Modules-Repo' || sourceRepo.name !== module.moduleId)) {
+        sourceReposToCheck.push({ ...sourceRepo, index });
+      }
+    });
+
+    // Fetch stars in batches
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < sourceReposToCheck.length; i += BATCH_SIZE) {
+      const batch = sourceReposToCheck.slice(i, i + BATCH_SIZE);
+      const query = makeStarCountQuery(batch);
+      try {
+        console.log(`Fetching stars for batch ${i / BATCH_SIZE + 1} / ${Math.ceil(sourceReposToCheck.length / BATCH_SIZE)}`);
+        const result: any = await client.request(query);
+        batch.forEach((item, batchIndex) => {
+          const repoData = result[`repo${batchIndex}`];
+          if (repoData) {
+            const sourceStars = repoData.stargazerCount;
+            if (sourceStars > modules[item.index].stargazerCount) {
+              modules[item.index].stargazerCount = sourceStars;
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Failed to fetch star counts for batch', e);
+      }
+    }
 
     fs.writeFileSync(modulesCachePath, JSON.stringify(modules));
     console.log(`Generated ${modules.length} modules`);
