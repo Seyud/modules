@@ -111,6 +111,103 @@ const client = new GraphQLClient('https://api.github.com/graphql', {
   },
 });
 
+const makeRepositoriesQuery = (cursor: string | null) => {
+  const arg = cursor ? `, after: "${cursor}"` : '';
+  return gql`
+  {
+    organization(login: "KernelSU-Modules-Repo") {
+      repositories(first: ${PAGINATION}${arg}, orderBy: {field: UPDATED_AT, direction: DESC}, privacy: PUBLIC) {
+        edges {
+          node {
+            name
+            description
+            url
+            homepageUrl
+            collaborators(affiliation: DIRECT, first: 100) {
+              edges {
+                node {
+                  login
+                  name
+                }
+              }
+            }
+            readme: object(expression: "HEAD:README.md") {
+              ... on Blob {
+                text
+              }
+            }
+            moduleJson: object(expression: "HEAD:module.json") {
+              ... on Blob {
+                text
+              }
+            }
+            latestRelease {
+              name
+              url
+              isDraft
+              description
+              descriptionHTML
+              createdAt
+              publishedAt
+              updatedAt
+              tagName
+              isPrerelease
+              releaseAssets(first: 50) {
+                edges {
+                  node {
+                    name
+                    contentType
+                    downloadUrl
+                    downloadCount
+                    size
+                  }
+                }
+              }
+            }
+            releases(first: 20) {
+              edges {
+                node {
+                  name
+                  url
+                  isDraft
+                  description
+                  descriptionHTML
+                  createdAt
+                  publishedAt
+                  updatedAt
+                  tagName
+                  isPrerelease
+                  isLatest
+                  releaseAssets(first: 50) {
+                    edges {
+                      node {
+                        name
+                        contentType
+                        downloadUrl
+                        downloadCount
+                        size
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            updatedAt
+            createdAt
+            stargazerCount
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        totalCount
+      }
+    }
+  }`;
+};
+
 const makeRepositoryQuery = (name: string) => gql`
 {
   repository(owner: "KernelSU-Modules-Repo", name: "${name}") {
@@ -186,94 +283,6 @@ const makeRepositoryQuery = (name: string) => gql`
           }
         }
       }
-    }
-    repositories(first: ${PAGINATION}${arg}, orderBy: {field: UPDATED_AT, direction: DESC}, privacy: PUBLIC) {
-      edges {
-        node {
-          name
-          description
-          url
-          homepageUrl
-          collaborators(affiliation: DIRECT, first: 100) {
-            edges {
-              node {
-                login
-                name
-              }
-            }
-          }
-          readme: object(expression: "HEAD:README.md") {
-            ... on Blob {
-              text
-            }
-          }
-          moduleJson: object(expression: "HEAD:module.json") {
-            ... on Blob {
-              text
-            }
-          }
-          latestRelease {
-            name
-            url
-            isDraft
-            description
-            descriptionHTML
-            createdAt
-            publishedAt
-            updatedAt
-            tagName
-            isPrerelease
-            releaseAssets(first: 50) {
-              edges {
-                node {
-                  name
-                  contentType
-                  downloadUrl
-                  downloadCount
-                  size
-                }
-              }
-            }
-          }
-          releases(first: 20) {
-            edges {
-              node {
-                name
-                url
-                isDraft
-                description
-                descriptionHTML
-                createdAt
-                publishedAt
-                updatedAt
-                tagName
-                isPrerelease
-                isLatest
-                releaseAssets(first: 50) {
-                  edges {
-                    node {
-                      name
-                      contentType
-                      downloadUrl
-                      downloadCount
-                      size
-                    }
-                  }
-                }
-              }
-            }
-          }
-          updatedAt
-          createdAt
-          stargazerCount
-        }
-        cursor
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-      totalCount
     }
   }
 }`;
@@ -577,4 +586,7 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
